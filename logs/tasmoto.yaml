@@ -1,0 +1,26 @@
+07:19:57.476 MQT: tele/tasmota_F41197/SENSOR = {"Time":"2024-08-12T07:19:57","ANALOG":{"Temperature":45.8},"ENERGY":{"TotalStartTime":"2024-08-06T12:56:41","Total":6.240,"Yesterday":1.899,"Today":0.487,"Period":0,"Power":80,"ApparentPower":120,"ReactivePower":90,"Factor":0.67,"Voltage":224,"Current":0.535},"TempUnit":"C"}
+07:20:07.460 MQT: tele/tasmota_F41197/STATE = {"Time":"2024-08-12T07:20:07","Uptime":"3T19:32:50","UptimeSec":329570,"Heap":24,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":210,"POWER":"ON","Wifi":{"AP":1,"SSId":"404 Not Found","BSSId":"DC:15:C8:DB:DC:7C","Channel":1,"Mode":"11n","RSSI":24,"Signal":-88,"LinkCount":18,"Downtime":"0T01:08:31"}}
+07:20:07.473 MQT: tele/tasmota_F41197/SENSOR = {"Time":"2024-08-12T07:20:07","ANALOG":{"Temperature":45.8},"ENERGY":{"TotalStartTime":"2024-08-06T12:56:41","Total":6.240,"Yesterday":1.899,"Today":0.487,"Period":0,"Power":91,"ApparentPower":123,"ReactivePower":84,"Factor":0.73,"Voltage":224,"Current":0.551},"TempUnit":"C"}
+07:20:17.458 MQT: tele/tasmota_F41197/STATE = {"Time":"2024-08-12T07:20:17","Uptime":"3T19:33:00","UptimeSec":329580,"Heap":24,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":210,"POWER":"ON","Wifi":{"AP":1,"SSId":"404 Not Found","BSSId":"DC:15:C8:DB:DC:7C","Channel":1,"Mode":"11n","RSSI":24,"Signal":-88,"LinkCount":18,"Downtime":"0T01:08:31"}}
+07:20:17.471 MQT: tele/tasmota_F41197/SENSOR = {"Time":"2024-08-12T07:20:17","ANALOG":{"Temperature":45.8},"ENERGY":{"TotalStartTime":"2024-08-06T12:56:41","Total":6.240,"Yesterday":1.899,"Today":0.487,"Period":0,"Power":80,"ApparentPower":120,"ReactivePower":90,"Factor":0.66,"Voltage":224,"Current":0.537},"TempUnit":"C"}
+07:20:27.452 MQT: tele/tasmota_F41197/STATE = {"Time":"2024-08-12T07:20:27","Uptime":"3T19:33:10","UptimeSec":329590,"Heap":23,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":210,"POWER":"ON","Wifi":{"AP":1,"SSId":"404 Not Found","BSSId":"DC:15:C8:DB:DC:7C","Channel":1,"Mode":"11n","RSSI":24,"Signal":-88,"LinkCount":18,"Downtime":"0T01:08:31"}}
+07:20:27.462 MQT: tele/tasmota_F41197/SENSOR = {"Time":"2024-08-12T07:20:27","ANALOG":{"Temperature":45.8},"ENERGY":{"TotalStartTime":"2024-08-06T12:56:41","Total":6.240,"Yesterday":1.899,"Today":0.488,"Period":0,"Power":80,"ApparentPower":120,"ReactivePower":89,"Factor":0.67,"Voltage":224,"Current":0.535},"TempUnit":"C"}
+07:20:37.451 MQT: tele/tasmota_F41197/STATE = {"Time":"2024-08-12T07:20:37","Uptime":"3T19:33:20","UptimeSec":329600,"Heap":23,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":210,"POWER":"ON","Wifi":{"AP":1,"SSId":"404 Not Found","BSSId":"DC:15:C8:DB:DC:7C","Channel":1,"Mode":"11n","RSSI":24,"Signal":-88,"LinkCount":18,"Downtime":"0T01:08:31"}}
+07:20:37.462 MQT: tele/tasmota_F41197/SENSOR = {"Time":"2024-08-12T07:20:37","ANALOG":{"Temperature":45.8},"ENERGY":{"TotalStartTime":"2024-08-06T12:56:41","Total":6.241,"Yesterday":1.899,"Today":0.488,"Period":0,"Power":80,"ApparentPower":120,"ReactivePower":89,"Factor":0.67,"Voltage":224,"Current":0.534},"TempUnit":"C"}
+07:20:47.448 MQT: tele/tasmota_F41197/STATE = {"Time":"2024-08-12T07:20:47","Uptime":"3T19:33:30","UptimeSec":329610,"Heap":23,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":210,"POWER":"ON","Wifi":{"AP":1,"SSId":"404 Not Found","BSSId":"DC:15:C8:DB:DC:7C","Channel":1,"Mode":"11n","RSSI":26,"Signal":-87,"LinkCount":18,"Downtime":"0T01:08:31"}}
+07:20:47.461 MQT: tele/tasmota_F41197/SENSOR = {"Time":"2024-08-12T07:20:47","ANALOG":{"Temperature":45.8},"ENERGY":{"TotalStartTime":"2024-08-06T12:56:41","Total":6.241,"Yesterday":1.899,"Today":0.488,"Period":0,"Power":80,"ApparentPower":120,"ReactivePower":90,"Factor":0.67,"Voltage":224,"Current":0.535},"TempUnit":"C"}
+07:20:57.448 MQT: tele/tasmota_F41197/STATE = {"Time":"2024-08-12T07:20:57","Uptime":"3T19:33:40","UptimeSec":329620,"Heap":23,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":210,"POWER":"ON","Wifi":{"AP":1,"SSId":"404 Not Found","BSSId":"DC:15:C8:DB:DC:7C","Channel":1,"Mode":"11n","RSSI":26,"Signal":-87,"LinkCount":18,"Downtime":"0T01:08:31"}}
+07:20:57.459 MQT: tele/tasmota_F41197/SENSOR = 
+{
+  "Time":"2024-08-12T07:20:57",
+  "ANALOG":{"Temperature":45.8},
+  "ENERGY":{"TotalStartTime":"2024-08-06T12:56:41","Total":6.241,"Yesterday":1.899,"Today":0.488,"Period":0,"Power":81,"ApparentPower":128,"ReactivePower":99,"Factor":0.63,"Voltage":224,"Current":0.571},
+  "TempUnit":"C"
+}
+
+tele/fritzbox/SENSOR
+{
+  "Time":"2024-08-12T07:20:57",
+  "ANALOG":{"TimeoutduringPPPnegotiation":1}
+}
+  

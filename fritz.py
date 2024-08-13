@@ -6,11 +6,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from future import standard_library
+from paho.mqtt import client as mqtt_client
 
 standard_library.install_aliases()
 import argparse
 
+import os
 import time
+import random
 import datetime
 import matplotlib
 
@@ -98,23 +101,61 @@ def main():
         with open(args.logdir + "/output.log", "a") as f:
             print(log, file=f)
             f.close()
+    
+    def connect_mqtt():
+        broker = os.environ["MQTT_BROKER_IP"]
+        port = int(os.environ["MQTT_BROKER_PORT"])
+        mqtt_username = os.environ["MQTT_USERNAME"]
+        mqtt_password = os.environ["MQTT_PASSWORD"]
+        print(broker, port, mqtt_username, mqtt_password)
+        client_id = f'fritzbox-{random.randint(0, 1000)}'
+        # username = 'emqx'
+        # password = 'public'
+        def on_connect(client, userdata, flags, rc):
+            if rc == 0:
+                print("Connected to MQTT Broker!")
+            else:
+                print("Failed to connect, return code %d\n", rc)
+
+        client = mqtt_client.Client(client_id)
+        #client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, client_id)
+        client.username_pw_set(mqtt_username, mqtt_password)
+        client.on_connect = on_connect
+        client.connect(broker, port)
+        return client
 
 
     def _publish():
+        client = connect_mqtt()
+        client.loop_start()
+        topic = "tele/fritzbox/SENSOR"
+        count = 1
+        logsdir = os.environ["LOG_DIR"]
+        publish_frequency = int(os.environ["MQTT_PUBLISH_INTERVAL"])
         while True:
-            _fetch_logs()
-            fritz = FritzStats(args.logdir, args.title)
+            #_fetch_logs()
+            fritz = FritzStats(logsdir, args.title)
             downtime_df = fritz.get_downtime()
-            print(downtime_df)
             # downtime_df.to_pickle("df.pkl")
             if not (downtime_df is None or downtime_df.empty):
-                sns.set(style="dark")
-                minute_df = downtime_df.groupby(
-                        [downtime_df.index.year, downtime_df.index.month, downtime_df.index.day,
-                        downtime_df.index.hour, downtime_df.index.minute ]).count()
-                print(minute_df)
+                print(downtime_df)
+                #sns.set(style="dark")
+                #minute_df = downtime_df.groupby(
+                #        [downtime_df.index.year, downtime_df.index.month, downtime_df.index.day,
+                #        downtime_df.index.hour, downtime_df.index.minute ]).count()
+                #print(minute_df)
             # TODO: configure time_in_seconds
-            time.sleep(60)
+            timestamp = datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S")
+            msg = f"timestamp: {timestamp}, messages: {count}"
+            result = client.publish(topic, msg)
+            # result: [0, 1]
+            status = result[0]
+            if status == 0:
+                print(f"Send `{msg}` to topic `{topic}`")
+            else:
+                print(f"Failed to send message to topic {topic}")
+            count += 1
+            time.sleep(publish_frequency)
 
     if args.action == "log":
         _fetch_logs()
