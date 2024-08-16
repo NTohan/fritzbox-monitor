@@ -19,3 +19,5 @@ This is a fork of https://github.com/paulknewton/fritzbox-monitor
 - Remove CLI options and add a main loop
 - Add poll time to the config
 - Add MQTT publish support
+- Add MQTT reconnect support
+- Remove CLI options

@@ -6,8 +6,8 @@ ADD *.py install
 ADD requirements.txt install
 RUN apt update
 RUN apt install -y tree catimg vim
-RUN pip install requests beautifulsoup4 python-dotenv
+RUN pip install requests beautifulsoup4
 RUN pip install -r install/requirements.txt
 
 #CMD ["python", "./install/fritz.py"] 
-ENTRYPOINT ["./install/fritz.py"]
+ENTRYPOINT ["python3", "./install/fritz.py"]

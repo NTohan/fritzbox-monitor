@@ -12,8 +12,10 @@ standard_library.install_aliases()
 import argparse
 
 import os
+import re
 import time
 import random
+import schedule 
 import datetime
 import matplotlib
 
@@ -24,186 +26,120 @@ import seaborn as sns
 from monitor import FritzBox
 from statistics import FritzStats
 
-# max number of bars to show on a graph (avoids overcrowding)
-max_graph_size = 50
-
-
-def _get_cli_arguments():
-    parser = argparse.ArgumentParser(description='FritzBox Monitor')
-    parser.add_argument("action", type=str, choices=["log", "stats", "publish"], help="action to perform")
-
-    # used by action: log
-    parser.add_argument('-i', '--ip-address',
-                        nargs='?', default=None, const=None,
-                        dest='address',
-                        help='ip-address of the FritzBox to connect to')
-    parser.add_argument('-u', '--user',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication username')
-    parser.add_argument('-p', '--password',
-                        nargs='?', default=None, const=None,
-                        help='Fritzbox authentication password')
-    parser.add_argument('--port',
-                        nargs='?', default=None, const=None,
-                        dest='port',
-                        help='port of the FritzBox to connect to')
-
-    # used by action: stats
-    parser.add_argument("--logdir", default="logs", help="folder where logs are stored")
-    parser.add_argument("--title", default="FRITZ!Box", help="title used on graphs")
-    parser.add_argument("--output", default="docs", help="folder to store graphs")
-    parser.add_argument("--prefix", default="fig_fritz", help="prefix added to graph filenames")
-    parser.add_argument('-s', '--silent', action='store_true', help="without std out")
-
-    args = parser.parse_args()
-    return args
-
-def main():
-    """
-    Run the tool to either extract a new system log, or build graphs from existing logs.
-
-    usage: fritz.py [-h] [-i [ADDRESS]] [-u [USER]] [-p [PASSWORD]]
-                [--port [PORT]] [--logdir LOGDIR] [--title TITLE]
-                [--output OUTPUT] [--prefix PREFIX] [--silent]
-                {log,stats, publish}
-
-    example: 
-        stats:
-            ./fritz.py stats -i <192.168.178.1> -u <username> -p <password>  --title "Errors in my router" --logdir <logs>  --output <docs> 
-
-        log:
-            ./fritz.py log -i <192.168.178.1> -u <username> -p <password> --logsdir <logs>
-
-        publish:
-            # publish errors every second on MQTT
-            ./fritz.py publishg -i <192.168.178.1> -u <username> -p <password> --logsdir <logs>
-    """
-    args = _get_cli_arguments()
-    print(args)
-
-
-    def _fetch_logs():
-        # TODO: add timezone
-        timestamp = datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S")
-        print(timestamp + " fetching logs from Fritzbox") 
-        fritz = FritzBox(
-            address=args.address,
-            port=args.port,
-            user=args.user,
-            password=args.password,
-        )
-
-        log = fritz.get_system_log()
-        
-        if not args.silent: 
-            print(log)
-        
-        with open(args.logdir + "/output.log", "a") as f:
-            print(log, file=f)
-            f.close()
+class Args():
+    topic = None
+    logsdir = None
+    publish_frequency = None
+    mqtt_broker = None
+    mqtt_port = None
+    mqtt_username = None
+    mqtt_password = None
+    fritz_ip = None
+    fritz_username = None
+    fritz_password = None
+    fritz_detection_rules = None
     
-    def connect_mqtt():
-        broker = os.environ["MQTT_BROKER_IP"]
-        port = int(os.environ["MQTT_BROKER_PORT"])
-        mqtt_username = os.environ["MQTT_USERNAME"]
-        mqtt_password = os.environ["MQTT_PASSWORD"]
-        print(broker, port, mqtt_username, mqtt_password)
-        client_id = f'fritzbox-{random.randint(0, 1000)}'
-        # username = 'emqx'
-        # password = 'public'
-        def on_connect(client, userdata, flags, rc):
-            if rc == 0:
-                print("Connected to MQTT Broker!")
-            else:
-                print("Failed to connect, return code %d\n", rc)
+    def __init__(self):
+        self.topic = "tele/fritzbox/SENSOR"
+        self.logsdir = os.environ["LOG_DIR"]
+        self.publish_frequency = int(os.environ["MQTT_PUBLISH_INTERVAL"])
+        self.mqtt_broker = os.environ["MQTT_BROKER_IP"]
+        self.mqtt_port = int(os.environ["MQTT_BROKER_PORT"])
+        self.mqtt_username = os.environ["MQTT_USERNAME"]
+        self.mqtt_password = os.environ["MQTT_PASSWORD"]
+        self.fritz_ip = os.environ["FRITZ_IP"]
+        self.fritz_username = os.environ["FRITZ_USERNAME"]
+        self.fritz_password = os.environ["FRITZ_PASSWORD"]
+        self.fritz_detection_rules = os.environ["FRITZ_DETECTION_RULES"]
+        self._check()
+    
+    def _check(self):
+        if self.topic == None\
+            or self.logsdir == None\
+            or self.publish_frequency == None\
+            or self.mqtt_broker == None\
+            or self.mqtt_port == None\
+            or self.mqtt_username == None\
+            or self.mqtt_password == None\
+            or self.fritz_ip == None\
+            or self.fritz_username == None\
+            or self.fritz_password == None\
+            or self.fritz_detection_rules == None:
+                raise Exception("Problem occurred while reading .env variables")
 
-        client = mqtt_client.Client(client_id)
-        #client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, client_id)
-        client.username_pw_set(mqtt_username, mqtt_password)
-        client.on_connect = on_connect
-        client.connect(broker, port)
-        return client
+def _fetch_logs(args):
+    fritz = FritzBox(
+        address=args.fritz_ip,
+        port=None,
+        user=args.fritz_username,
+        password=args.fritz_password,
+    )
 
+    return fritz.get_system_log()
 
-    def _publish():
-        client = connect_mqtt()
-        client.loop_start()
-        topic = "tele/fritzbox/SENSOR"
-        count = 1
-        logsdir = os.environ["LOG_DIR"]
-        publish_frequency = int(os.environ["MQTT_PUBLISH_INTERVAL"])
-        while True:
-            #_fetch_logs()
-            fritz = FritzStats(logsdir, args.title)
-            downtime_df = fritz.get_downtime()
-            # downtime_df.to_pickle("df.pkl")
-            if not (downtime_df is None or downtime_df.empty):
-                print(downtime_df)
-                #sns.set(style="dark")
-                #minute_df = downtime_df.groupby(
-                #        [downtime_df.index.year, downtime_df.index.month, downtime_df.index.day,
-                #        downtime_df.index.hour, downtime_df.index.minute ]).count()
-                #print(minute_df)
-            # TODO: configure time_in_seconds
-            timestamp = datetime.datetime.now().strftime("%d.%m.%y %H:%M:%S")
-            msg = f"timestamp: {timestamp}, messages: {count}"
-            result = client.publish(topic, msg)
-            # result: [0, 1]
-            status = result[0]
-            if status == 0:
-                print(f"Send `{msg}` to topic `{topic}`")
-            else:
-                print(f"Failed to send message to topic {topic}")
-            count += 1
-            time.sleep(publish_frequency)
+    
+def connect_mqtt(args):
 
-    if args.action == "log":
-        _fetch_logs()
-        
-    elif args.action == "stats":
-        fritz = FritzStats(args.logdir, args.title)
-        downtime_df = fritz.get_downtime()
-        print(downtime_df)
-        # downtime_df.to_pickle("df.pkl")
-        if not (downtime_df is None or downtime_df.empty):
-            sns.set(style="dark")
+    client_id = f'fritzbox-{random.randint(0, 1000)}'
 
-            # pd.set_option('display.max_rows', len(downtime))
-            # print(df)
-            # pd.reset_option('display.max_rows')
+    def on_connect(client, userdata, flags, rc):
+        if rc == 0:
+            print("Connected to MQTT Broker!")
+        else:
+            print("Failed to connect, return code %d\n", rc)
 
-            hour_df = downtime_df.groupby(
-                [downtime_df.index.year, downtime_df.index.month, downtime_df.index.day,
-                 downtime_df.index.hour]).count()
-            hour_df = hour_df.tail(max_graph_size)  # truncate
+    client = mqtt_client.Client(client_id)
+    client.username_pw_set(args.mqtt_username, args.mqtt_password)
+    client.on_connect = on_connect
+    print ("Connecting to mqtt broker...")
+    client.connect(args.mqtt_broker, args.mqtt_port)
+    return client
 
-            hour_df.plot.bar(figsize=(10, 4))
-            plt.ylabel("# failures")
-            plt.xlabel("time")
-            plt.title("%s failures (by hour)" % args.title)
-            plt.legend()
-            plt.savefig(args.output + "/" + args.prefix + "_hourly.png", bbox_inches='tight')
-
-            day_df = downtime_df.groupby(
-                [downtime_df.index.year, downtime_df.index.month, downtime_df.index.day]).count()
-            day_df = day_df.tail(max_graph_size)  # truncate
-
-            day_df.plot.bar(figsize=(10, 4))
-            plt.ylabel("# failures")
-            plt.xlabel("time")
-            plt.title("%s failures (by day)" % args.title)
-            plt.legend()
-            plt.savefig(args.output + "/" + args.prefix + "_daily.png", bbox_inches='tight')
-
-            minute_df = downtime_df.groupby(
-                [downtime_df.index.year, downtime_df.index.month, downtime_df.index.day,
-                 downtime_df.index.hour, downtime_df.index.minute ]).count()
-            print(minute_df)
-
-    elif args.action == "publish":
-        _publish()
+def _prepare_msg(args, downtime):
+    msg = []
+    timestamp = datetime.datetime.now().isoformat()
+    for pattern in args.fritz_detection_rules.split(','):
+        err = [(ts, er) for ts, er in downtime if re.match(pattern, er)]
+    #for ts, er in downtime:
+        d = {}
+        for ts, er in err:
+            d[ts] = d.get(ts, 0) + 1
+        print(d)
+        msg.append(f"Time: {timestamp}, type: {pattern}, downtime: {str(d)}")
+    #print(d)
+    print(msg)
+    return msg
 
 
+def _publish(args):
+    if not hasattr(_publish, "count"):
+        _publish.count = 1  # it doesn't exist yet, so initialize it
+    logs = _fetch_logs(args)
+    fritz = FritzStats(logs, args.fritz_detection_rules)
+    downtime = fritz.get_downtime()
+    print(downtime)
+    msgs = _prepare_msg(args, downtime)
+    for msg in msgs:
+        result = client.publish(args.topic, msg)
+        # result: [0, 1]
+        status = result[0]
+        if status == 0:
+            print(f"Send `{msg}` to topic `{args.topic}`")
+        else:
+            print(f"Failed to send message to topic {args.topic}")
+    _publish.count += 1
+
+def _start(schedule):
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 if __name__ == '__main__':
-    main()
+
+    args = Args()
+
+    client = connect_mqtt(args)
+    client.loop_start()
+
+    schedule.every(args.publish_frequency).seconds.do(lambda: _publish(args))
+    _start(schedule)
