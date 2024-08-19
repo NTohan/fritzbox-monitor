@@ -6,10 +6,11 @@ services:
       dockerfile: Dockerfile
     container_name: fritzbox-monitor
     environment:
+      LOG_DIR: ${LOG_DIR}
       FRITZ_IP: ${FRITZ_IP}      
       FRITZ_USERNAME: ${FRITZ_USERNAME}
       FRITZ_PASSWORD: ${FRITZ_PASSWORD}
-      LOG_DIR: ${LOG_DIR}
+      FRITZ_DETECTION_RULES: ${FRITZ_DETECTION_RULES}
       MQTT_BROKER_IP: ${MQTT_BROKER_IP}
       MQTT_BROKER_PORT: ${MQTT_BROKER_PORT}
       MQTT_USERNAME: ${MQTT_USERNAME}
