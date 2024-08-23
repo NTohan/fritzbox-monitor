@@ -7,6 +7,7 @@ services:
     container_name: fritzbox-monitor
     environment:
       LOG_DIR: ${LOG_DIR}
+      TIMEZONE: ${TIMEZONE}
       FRITZ_IP: ${FRITZ_IP}      
       FRITZ_USERNAME: ${FRITZ_USERNAME}
       FRITZ_PASSWORD: ${FRITZ_PASSWORD}
@@ -18,7 +19,7 @@ services:
       MQTT_PUBLISH_INTERVAL: ${MQTT_PUBLISH_INTERVAL} # in seconds
     #cap_add:
     #  - NET_ADMIN
-    restart: always
+    restart: unless-stopped
     stop_grace_period: 2m
     volumes:
       - ./logs:/storage #windows installation

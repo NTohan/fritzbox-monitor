@@ -30,7 +30,10 @@ from statistics import FritzStats
 
 class Args():
     topic = None
+    tz = None
     logs_dir = None
+    fetch_attempts = None
+    fetch_frequency = None
     publish_frequency = None
     mqtt_broker = None
     mqtt_port = None
@@ -43,8 +46,11 @@ class Args():
     
     def __init__(self):
         self.topic = "tele/fritzbox/monitor/error"
+        self.tz = os.environ["TIMEZONE"]
         self.logs_dir = os.environ["LOG_DIR"]
+        self.fetch_attempts = 20
         self.publish_frequency = int(os.environ["MQTT_PUBLISH_INTERVAL"])
+        self.fetch_frequency = self.publish_frequency - 10 if self.publish_frequency <= 5 else 5
         self.mqtt_broker = os.environ["MQTT_BROKER_IP"]
         self.mqtt_port = int(os.environ["MQTT_BROKER_PORT"])
         self.mqtt_username = os.environ["MQTT_USERNAME"]
@@ -58,6 +64,9 @@ class Args():
     def _check(self):
         if self.topic == None\
             or self.logs_dir == None\
+            or self.tz == None\
+            or self.fetch_attempts == None\
+            or self.fetch_frequency == None\
             or self.publish_frequency == None\
             or self.mqtt_broker == None\
             or self.mqtt_port == None\
@@ -76,6 +85,7 @@ class Args():
 class Logs():
     logs_dir = None
     fritz_logs = None
+    attempts = 0
     is_job_running = False
 
     def __init__(self, args):
@@ -85,11 +95,18 @@ class Logs():
         return datetime.datetime.now().isoformat()
 
     # schedule before the publish call
-    def fetch(self, args):
+    def fetch(self, args, logs):
+        if self.attempts >= args.fetch_attempts:
+            # Try reconnecting to Fritzbox
+            logs.info(f"Fritzbox logs status after {self.attempts} attempts: failed! fritzbox-monitor will be restarted.")
+            os._exit(1)
+
         if self.is_job_running:
+            self.attempts += 1
             self.info("Fritzbox logs status: pending")    
             return
-        
+
+        self.attempts = 0
         self.is_job_running = True
 
         self.info("Fritzbox logs status: fetching")
@@ -105,7 +122,7 @@ class Logs():
         self.is_job_running = False
 
 
-    def clear_fritbox_logs(self):
+    def clear_fritzbox_logs(self):
         self.fritz_logs = None
 
     def get_fritzbox_logs(self):
@@ -130,54 +147,53 @@ def connect_mqtt(args, logs):
     client = mqtt_client.Client(client_id)
     client.username_pw_set(args.mqtt_username, args.mqtt_password)
     client.on_connect = on_connect
-    logs.info("Connecting to mqtt broker...")
+    logs.info("Connecting to MQTT broker")
     client.connect(args.mqtt_broker, args.mqtt_port)
     return client
 
-def _prepare_msg(args, logs, downtime):
+def prepare_msgs(args, downtime):
     msg = []
-    timestamp = datetime.datetime.now().isoformat()
     for pattern in args.fritz_detection_rules.split(','):
         err = [(ts, er) for ts, er in downtime if re.match(pattern, er)]
-        d = {}
-        for ts, er in err:
-            d[ts] = d.get(ts, 0) + 1
-        logs.info(d)
+        events = {}
+        for ts, _ in err:
+            # sum up the events reported at the same time
+            events[ts] = events.get(ts, 0) + 1
         data = {}
         data['name'] = "fritzbox-monitor"
-        data['tag'] = pattern.replace(" ", "_")
-        data['time'] = timestamp
-        data['downtime'] = []
-        for ts, cnt in d.items():
-            data['downtime'].append({"timestamp": ts, "value": cnt})
+        data['tags'] = []
+        data['tags'].append({"rule": pattern.replace(" ", "_")})
+        data['time'] = max(events, key=events.get) if events else 0
+        data['value'] = max(events.values()) if events else 0
         msg.append((pattern, json.dumps(data)))
-    logs.info(msg)
     return msg
 
 
-def _publish(args, logs):
+def publish(args, logs):
     fritz_logs = logs.get_fritzbox_logs()
-    fritz = FritzStats(logs, fritz_logs, args.fritz_detection_rules)
+    fritz = FritzStats(logs, fritz_logs, args.fritz_detection_rules, args.publish_frequency)
     downtime = fritz.get_downtime()
-    print(downtime)
-    msgs = _prepare_msg(args, logs, downtime)
+    if downtime is None:
+        logs.info("No error to publish")
+        return
+    msgs = prepare_msgs(args, downtime)
     for err_type, msg in msgs:
         topic = f"{args.topic}/{err_type}".replace(" ", "_")
         result = client.publish(topic, msg)
         status = result[0]
         if status == 0:
-            logs.info(f"Send `{msg}` to topic `{topic}`")
+            logs.info(f"Sent `{msg}` to topic `{topic}`")
         else:
-            logs.info(f"Failed to send message to topic {topic}")
+            logs.info(f"Failed to send `{msg}` to topic {topic}")
 
     # fetch job should be completed before next publish cycle
-    logs.clear_fritbox_logs()
+    logs.clear_fritzbox_logs()
 
 def deploy(job_func):
     job_thread = threading.Thread(target=job_func)
     job_thread.start()
 
-def _start(schedule):
+def start(schedule):
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -185,14 +201,19 @@ def _start(schedule):
 if __name__ == '__main__':
 
     args = Args()
+
+    # set TZ from .env
+    os.environ["TZ"] = args.tz
+    time.tzset()
+
     logs = Logs(args)
 
     client = connect_mqtt(args, logs)
     client.loop_start()
 
     # fetching fritzbox logs job
-    schedule.every(5).seconds.do(deploy, lambda: logs.fetch(args))
+    schedule.every(args.fetch_frequency).seconds.do(deploy, lambda: logs.fetch(args, logs))
     
     # publishing job
-    schedule.every(args.publish_frequency).seconds.do(deploy, lambda: _publish(args, logs))
-    _start(schedule)
+    schedule.every(args.publish_frequency).seconds.do(deploy, lambda: publish(args, logs))
+    start(schedule)

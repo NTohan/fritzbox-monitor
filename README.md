@@ -21,3 +21,8 @@ This is a fork of https://github.com/paulknewton/fritzbox-monitor
 - Add MQTT publish support
 - Add MQTT reconnect support
 - Remove CLI options
+
+
+## Setting the correct timezone
+Attention! Timezone from .env shall match to Fritzbox timezone settings (FRITZ!OS(7.81): System -> Region and Language -> Time Zone). 
+https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
