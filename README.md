@@ -23,6 +23,12 @@ This is a fork of https://github.com/paulknewton/fritzbox-monitor
 - Remove CLI options
 
 
+## How to launch?
+
+```
+docker run -it -v .:/shared --env-file .env fritzbox-monitor
+```
+
 ## Setting the correct timezone
 Attention! Timezone from .env shall match to Fritzbox timezone settings (FRITZ!OS(7.81): System -> Region and Language -> Time Zone). 
 https://en.wikipedia.org/wiki/List_of_tz_database_time_zones

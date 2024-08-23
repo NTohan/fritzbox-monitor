@@ -5,7 +5,7 @@ RUN mkdir -p install/docs
 ADD *.py install
 ADD requirements.txt install
 RUN apt update
-RUN apt install -y tree catimg vim
+RUN apt install -y tree iputils-ping vim
 RUN pip install requests beautifulsoup4
 RUN pip install -r install/requirements.txt
 

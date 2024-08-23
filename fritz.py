@@ -151,6 +151,10 @@ def connect_mqtt(args, logs):
     client.connect(args.mqtt_broker, args.mqtt_port)
     return client
 
+def is_connected(args):
+    return os.system(f"ping -c 1 {args.fritz_ip} > /dev/null 2>&1") != 0
+
+
 def prepare_msgs(args, downtime):
     msg = []
     for pattern in args.fritz_detection_rules.split(','):
@@ -165,6 +169,7 @@ def prepare_msgs(args, downtime):
         data['tags'].append({"rule": pattern.replace(" ", "_")})
         data['time'] = max(events, key=events.get) if events else 0
         data['value'] = max(events.values()) if events else 0
+        data['connectivity'] = 'on' if is_connected(args) else 'off'
         msg.append((pattern, json.dumps(data)))
     return msg
 

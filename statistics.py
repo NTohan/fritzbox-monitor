@@ -55,7 +55,6 @@ class FritzStats(object):
                     try:
                         ts_str = regex.search(line).group(1)  # timestamp when the event occurred
                         timestamp = datetime.strptime(ts_str, "%d.%m.%y %H:%M:%S")  # format "30.07.19 23:59:12" 
-                        self.logs.info(f"pattern match: {ts_str}") 
                         if not self.check_event(timestamp):
                             timestamp_data.append((timestamp.isoformat(), pattern))
                         else:
