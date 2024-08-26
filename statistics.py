@@ -41,8 +41,8 @@ class FritzStats(object):
     def check_event(self, event_time):
         now = datetime.now().strftime("%d.%m.%y %H:%M:%S")
         result =  datetime.strptime(now, "%d.%m.%y %H:%M:%S") - event_time
-        # map error events happened in the last 300 secs (30s (default) * 10) to current publish cycle   
-        return int(result.seconds) > self.publish_frequency * 10
+        # map error events happened in the last 120s to current publish cycle   
+        return int(result.seconds) > 120 #seconds
     
     def _read_logs(self, patterns):
         timestamp_data = []

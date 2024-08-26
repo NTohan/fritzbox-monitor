@@ -29,7 +29,7 @@ from monitor import FritzBox
 from statistics import FritzStats
 
 class Args():
-    topic = None
+    topic_rules = None
     tz = None
     logs_dir = None
     fetch_attempts = None
@@ -45,12 +45,13 @@ class Args():
     fritz_detection_rules = None
     
     def __init__(self):
-        self.topic = "tele/fritzbox/monitor/error"
+        self.topic_rules = "tele/fritzbox/monitor/rule"
+        self.topic_connectivity = "tele/fritzbox/monitor/connectivity"
         self.tz = os.environ["TIMEZONE"]
         self.logs_dir = os.environ["LOG_DIR"]
         self.fetch_attempts = 20
         self.publish_frequency = int(os.environ["MQTT_PUBLISH_INTERVAL"])
-        self.fetch_frequency = self.publish_frequency - 10 if self.publish_frequency <= 5 else 5
+        self.fetch_frequency = self.publish_frequency - 10 if (self.publish_frequency - 10) >= 5 else 5
         self.mqtt_broker = os.environ["MQTT_BROKER_IP"]
         self.mqtt_port = int(os.environ["MQTT_BROKER_PORT"])
         self.mqtt_username = os.environ["MQTT_USERNAME"]
@@ -62,7 +63,8 @@ class Args():
         self._check()
     
     def _check(self):
-        if self.topic == None\
+        if self.topic_rules == None\
+            or self.topic_connectivity == None\
             or self.logs_dir == None\
             or self.tz == None\
             or self.fetch_attempts == None\
@@ -78,8 +80,8 @@ class Args():
             or self.fritz_detection_rules == None:
                 raise Exception("Problem occurred while reading .env variables")
         
-        if self.publish_frequency < 10:
-            raise Exception("Set publish frequency >= 10s")
+        if self.publish_frequency < 30:
+            raise Exception("Set publish frequency >= 30s")
         
 
 class Logs():
@@ -152,7 +154,7 @@ def connect_mqtt(args, logs):
     return client
 
 def is_connected(args):
-    return os.system(f"ping -c 1 {args.fritz_ip} > /dev/null 2>&1") != 0
+    return os.system(f"ping -c 2 -w 2 {args.fritz_ip} > /dev/null 2>&1") == 0
 
 
 def prepare_msgs(args, downtime):
@@ -169,27 +171,40 @@ def prepare_msgs(args, downtime):
         data['tags'].append({"rule": pattern.replace(" ", "_")})
         data['time'] = max(events, key=events.get) if events else 0
         data['value'] = max(events.values()) if events else 0
-        data['connectivity'] = 'on' if is_connected(args) else 'off'
         msg.append((pattern, json.dumps(data)))
     return msg
 
+def prepare_msg(args):
+    data = {}
+    data['name'] = "fritzbox-monitor"
+    data['tags'] = []
+    data['tags'].append({"rule": "connectivity"})
+    data['value'] = 'ON' if is_connected(args) else 'OFF'
+    return json.dumps(data)
+
+
+def send(topic, msg):
+    result = client.publish(topic, msg)
+    status = result[0]
+    if status == 0:
+        logs.info(f"Sent `{msg}` to topic `{topic}`")
+    else:
+        logs.info(f"Failed to send `{msg}` to topic {topic}")
 
 def publish(args, logs):
     fritz_logs = logs.get_fritzbox_logs()
     fritz = FritzStats(logs, fritz_logs, args.fritz_detection_rules, args.publish_frequency)
+    
+    send(args.topic_connectivity, prepare_msg(args))
+
     downtime = fritz.get_downtime()
     if downtime is None:
         logs.info("No error to publish")
         return
     msgs = prepare_msgs(args, downtime)
-    for err_type, msg in msgs:
-        topic = f"{args.topic}/{err_type}".replace(" ", "_")
-        result = client.publish(topic, msg)
-        status = result[0]
-        if status == 0:
-            logs.info(f"Sent `{msg}` to topic `{topic}`")
-        else:
-            logs.info(f"Failed to send `{msg}` to topic {topic}")
+    for rule, msg in msgs:
+        topic_rules = f"{args.topic_rules}/{rule}".replace(" ", "_")
+        send(topic_rules, msg)
 
     # fetch job should be completed before next publish cycle
     logs.clear_fritzbox_logs()

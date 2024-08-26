@@ -22,3 +22,5 @@ services:
     restart: unless-stopped
     volumes:
       - ./logs:/storage
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
