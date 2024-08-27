@@ -6,11 +6,9 @@ from builtins import open
 from future import standard_library
 standard_library.install_aliases()
 from builtins import object
-import glob
-import re
-from datetime import datetime, timedelta, timezone
 
-import pandas as pd
+import re
+from datetime import datetime
 
 
 class FritzStats(object):
@@ -18,25 +16,18 @@ class FritzStats(object):
     Manages statistics for a FRITZ!Box router.
     """
 
-    def __init__(self, logs, fritz_logs, fritz_detection_rules, publish_frequency):
+    def __init__(self, args, logs):
+        self.args = args
         self.logs = logs
-        self.fritz_logs = fritz_logs
-        self.fritz_detection_rules = fritz_detection_rules
-        self.publish_frequency = publish_frequency
-        # TODO: remove, added only for testing purposes
-        self.fritz_logs += '\n16.08.24 15:44:10 PPPoE error: Timeout.'
-        self.fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
-        self.fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
-        self.fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
-        self.fritz_logs += '\n16.08.24 15:52:12 Timeout during PPP negotiation.'
+        self.patterns = args.fritz_detection_rules.split(',')
 
-    def get_downtime(self):
+
+    def get_downtime(self, fritz_logs):
         """
-        Get the times when the router did not have an internet connection.
-        :return: dataframe of the form timestamp, event (event is always 1)
+        Get the times when the error events occurred
+        :return: list of patter and events
         """
-        # TODO: make rules list configurable
-        return self._read_logs(self.fritz_detection_rules.split(','))
+        return self._filter(fritz_logs)
 
     def check_event(self, event_time):
         now = datetime.now().strftime("%d.%m.%y %H:%M:%S")
@@ -44,10 +35,17 @@ class FritzStats(object):
         # map error events happened in the last 120s to current publish cycle   
         return int(result.seconds) > 120 #seconds
     
-    def _read_logs(self, patterns):
+    def _filter(self, fritz_logs):
+        # TODO: remove, added only for testing purposes
+        fritz_logs += '\n16.08.24 15:44:10 PPPoE error: Timeout.'
+        fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
+        fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
+        fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
+        fritz_logs += '\n27.08.24 15:56:12 Timeout during PPP negotiation.'
+
         timestamp_data = []
-        for pattern in patterns:
-            lines = re.split('\n', self.fritz_logs)
+        for pattern in self.patterns:
+            lines = re.split('\n', fritz_logs)
             regex = re.compile("^(.*) %s." % pattern)
             self.logs.info(f"checking against rule: {regex}")
             for line in lines:
@@ -64,4 +62,4 @@ class FritzStats(object):
 
         self.logs.info(timestamp_data)
         return timestamp_data
- # type: ignore
+    
