@@ -6,8 +6,7 @@ services:
       dockerfile: Dockerfile
     container_name: fritzbox-monitor
     environment:
-      LOG_DIR: ${LOG_DIR}
-      TIMEZONE: ${TIMEZONE}
+      LOG_LEVEL: ${LOG_LEVEL}
       FRITZ_IP: ${FRITZ_IP}      
       FRITZ_USERNAME: ${FRITZ_USERNAME}
       FRITZ_PASSWORD: ${FRITZ_PASSWORD}
@@ -21,6 +20,6 @@ services:
     #  - NET_ADMIN
     restart: unless-stopped
     volumes:
-      - ./logs:/storage
+      - ./logs:/logs
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro

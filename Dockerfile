@@ -1,5 +1,6 @@
 FROM python:3.9 
 
+RUN mkdir -p /logs
 RUN mkdir -p install/logs
 RUN mkdir -p install/docs
 ADD src/*.py install

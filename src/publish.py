@@ -29,14 +29,14 @@ class FritzPublish(object):
 
         def on_connect(client, userdata, flags, rc):
             if rc == 0:
-                logs.info(f"Connected to MQTT Broker at {args.mqtt_broker}:{args.mqtt_port}")
+                self.logs.info(f"Connected to MQTT Broker at {args.mqtt_broker}:{args.mqtt_port}")
             else:
-                logs.info(f"Failed to connect, return code {rc}\n")
+                self.logs.info(f"Failed to connect, return code {rc}\n")
 
         client = mqtt_client.Client(client_id)
         client.username_pw_set(args.mqtt_username, args.mqtt_password)
         client.on_connect = on_connect
-        logs.info("Connecting to MQTT broker")
+        self.logs.info("Connecting to MQTT broker")
         client.connect(args.mqtt_broker, args.mqtt_port)
         client.loop_start()
         self.client = client

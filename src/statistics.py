@@ -56,7 +56,7 @@ class FritzStats(object):
                         if not self.check_event(timestamp):
                             timestamp_data.append((timestamp.isoformat(), pattern))
                         else:
-                            self.logs.info(f"skipping error published in the past {timestamp.isoformat(), pattern}")
+                            self.logs.debug(f"skipping error published in the past {timestamp.isoformat(), pattern}")
                     except AttributeError:
                         pass
 

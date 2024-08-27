@@ -31,12 +31,7 @@ def start(schedule):
 if __name__ == '__main__':
 
     args = Args()
-
-    # set TZ runtime from .env
-    os.environ["TZ"] = args.tz
-    time.tzset()
-
-    logs = Logger(args)
+    logs = Logger(args).get_logger()
 
     # fetching fritzbox logs job
     fetch = FritzBox(args, logs)

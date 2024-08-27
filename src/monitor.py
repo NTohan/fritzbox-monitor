@@ -44,7 +44,7 @@ class FritzBox(object):
     def start(self):
         if self.attempts >= self.args.fetch_attempts:
             # Try reconnecting to Fritzbox
-            self.logs.info(f"Fritzbox logs status after {self.attempts} attempts: failed! fritzbox-monitor will be restarted.")
+            self.logs.critical(f"Fritzbox logs status after {self.attempts} attempts: failed! fritzbox-monitor will be restarted.")
             os._exit(1)
 
         if self.is_job_running:

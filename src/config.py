@@ -14,7 +14,7 @@ class Args(object):
     """
     topic_rules = None
     tz = None
-    logs_dir = None
+    logs_level = None
     fetch_attempts = None
     fetch_frequency = None
     publish_frequency = None
@@ -30,8 +30,7 @@ class Args(object):
     def __init__(self):
         self.topic_rules = "tele/fritzbox/monitor/rule"
         self.topic_connectivity = "tele/fritzbox/monitor/connectivity"
-        self.tz = os.environ["TIMEZONE"]
-        self.logs_dir = os.environ["LOG_DIR"]
+        self.logs_level = os.environ["LOG_LEVEL"]
         self.fetch_attempts = 20
         self.publish_frequency = int(os.environ["MQTT_PUBLISH_INTERVAL"])
         self.fetch_frequency = self.publish_frequency - 10 if (self.publish_frequency - 10) >= 5 else 5
@@ -48,8 +47,7 @@ class Args(object):
     def _check(self):
         if self.topic_rules == None\
             or self.topic_connectivity == None\
-            or self.logs_dir == None\
-            or self.tz == None\
+            or self.logs_level == None\
             or self.fetch_attempts == None\
             or self.fetch_frequency == None\
             or self.publish_frequency == None\
