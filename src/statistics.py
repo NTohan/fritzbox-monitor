@@ -33,7 +33,7 @@ class FritzStats(object):
         now = datetime.now().strftime("%d.%m.%y %H:%M:%S")
         result =  datetime.strptime(now, "%d.%m.%y %H:%M:%S") - event_time
         # map error events happened in the last 120s to current publish cycle   
-        return int(result.seconds) > 120 #seconds
+        return int(result.days) == 0 and int(result.seconds) < 120 #seconds
     
     def _filter(self, fritz_logs):
         # TODO: remove, added only for testing purposes
@@ -53,7 +53,7 @@ class FritzStats(object):
                     try:
                         ts_str = regex.search(line).group(1)  # timestamp when the event occurred
                         timestamp = datetime.strptime(ts_str, "%d.%m.%y %H:%M:%S")  # format "30.07.19 23:59:12" 
-                        if not self.check_event(timestamp):
+                        if self.check_event(timestamp):
                             timestamp_data.append((timestamp.isoformat(), pattern))
                         else:
                             self.logs.debug(f"skipping error published in the past {timestamp.isoformat(), pattern}")
@@ -62,4 +62,4 @@ class FritzStats(object):
 
         self.logs.info(timestamp_data)
         return timestamp_data
-    
+     # type: ignore
