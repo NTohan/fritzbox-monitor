@@ -1,0 +1,25 @@
+name: fritzbox
+services:
+  monitor:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: fritzbox-monitor
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+      FRITZ_IP: ${FRITZ_IP}      
+      FRITZ_USERNAME: ${FRITZ_USERNAME}
+      FRITZ_PASSWORD: ${FRITZ_PASSWORD}
+      FRITZ_DETECTION_RULES: ${FRITZ_DETECTION_RULES}
+      MQTT_BROKER_IP: ${MQTT_BROKER_IP}
+      MQTT_BROKER_PORT: ${MQTT_BROKER_PORT}
+      MQTT_USERNAME: ${MQTT_USERNAME}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
+      MQTT_PUBLISH_INTERVAL: ${MQTT_PUBLISH_INTERVAL} # in seconds
+    #cap_add:
+    #  - NET_ADMIN
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
