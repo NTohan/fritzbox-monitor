@@ -36,7 +36,7 @@ class Logger(object):
         self.logger = logging.getLogger(__name__)
         logging.basicConfig(encoding='utf-8', 
                             level=self.logs_level,
-                            format="%(asctime)s [%(filename)s] [%(levelname)s]  %(message)s",
+                            format="%(asctime)s [%(levelname)s] %(message)s",
                             handlers=[
                                 logging.FileHandler("{0}/{1}.log".format(self.logs_dir, self.filename)),
                                 logging.StreamHandler()

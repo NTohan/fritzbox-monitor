@@ -1,13 +1,14 @@
-FROM python:3.9 
+FROM alpine:3.20.2
 
-RUN mkdir -p /logs
-RUN mkdir -p install/logs
-RUN mkdir -p install/docs
-ADD src/*.py install
+RUN mkdir -p /logs /install
+ADD src/*.py /install
 ADD requirements.txt install
-RUN apt update
-RUN apt install -y tree iputils-ping vim
-RUN pip install requests beautifulsoup4
-RUN pip install -r install/requirements.txt
+RUN apk add --no-cache python3 py3-pip tree iputils-ping vim
+
+RUN python -m venv /opt/venv
+# Enable venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN pip install -r /install/requirements.txt
 
 ENTRYPOINT ["python3", "./install/fritz.py"]
