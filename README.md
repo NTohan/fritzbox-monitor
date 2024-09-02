@@ -57,6 +57,9 @@ docker run --env-file .env navitohan/fritzbox-monitor:latest
 ```
 docker compose up --build
 ```
+# Where is fritzbox-monitor image published?
+
+https://hub.docker.com/r/navitohan/fritzbox-monitor
 
 ## Setting the correct timezone
 The timezone in the .env file must match the Fritzbox timezone settings (FRITZ!OS(7.81): System -> Region and Language -> Time Zone).
