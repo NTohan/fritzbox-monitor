@@ -7,6 +7,7 @@ services:
     container_name: fritzbox-monitor
     environment:
       LOG_LEVEL: ${LOG_LEVEL}
+      PROTOCOL: ${PROTOCOL}
       FRITZ_IP: ${FRITZ_IP}      
       FRITZ_USERNAME: ${FRITZ_USERNAME}
       FRITZ_PASSWORD: ${FRITZ_PASSWORD}

@@ -10,8 +10,8 @@ import os
 import re
 import json
 import random
+from datetime import datetime
 from paho.mqtt import client as mqtt_client
-
 from statistics import FritzStats
 
 class FritzPublish(object):
@@ -56,32 +56,40 @@ class FritzPublish(object):
                 # sum up the events reported at the same time
                 events[ts] = events.get(ts, 0) + 1
             data = {}
-            data['name'] = "fritzbox-monitor"
+            data['measurement'] = "fritzbox-monitor"
             data['tags'] = []
             data['tags'].append({"rule": pattern.replace(" ", "_")})
             data['time'] = max(events, key=events.get) if events else 0
-            data['value'] = max(events.values()) if events else 0
+            data['fields'] = []
+            data['fields'].append({"value" : max(events.values()) if events else 0})
             msg.append((pattern, json.dumps(data)))
         return msg
 
     def prepare_msg(self):
         data = {}
-        data['name'] = "fritzbox-monitor"
+        data['measurement'] = "fritzbox-monitor"
         data['tags'] = []
         data['tags'].append({"rule": "connectivity"})
-        data['value'] = 'ON' if self.is_connected() and self.last_msg_status  else 'OFF'
+        data['time'] = datetime.now().isoformat()
+        data['fields'] = []
+        data['fields'].append({"value" : 'ON' if self.is_connected() and self.last_msg_status  else 'OFF'})
         return json.dumps(data)
 
 
     def send(self, topic, msg):
-        result = self.client.publish(topic, msg)
-        status = result[0]
-        if status == 0:
-            self.last_msg_status = True
-            self.logs.info(f"Sent `{msg}` to topic `{topic}`")
+        if self.args.protocol == 'JSON':
+            result = self.client.publish(topic, msg)
+            status = result[0]
+            if status == 0:
+                self.last_msg_status = True
+                self.logs.info(f"Sent `{msg}` to topic `{topic}`")
+            else:
+                self.last_msg_status = False
+                self.logs.info(f"Failed to send `{msg}` to topic {topic}")
+        elif self.args.protocol == 'LINE':
+            self.logs.error("Protocol not supported!")
         else:
-            self.last_msg_status = False
-            self.logs.info(f"Failed to send `{msg}` to topic {topic}")
+            self.logs.error("Protocol not supported! os.exit")
 
     def start(self):
         fritz_logs = self.fetch.get_fritzbox_logs()

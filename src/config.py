@@ -13,6 +13,7 @@ class Args(object):
     Manage arguments passed by docker .env file
     """
     topic_rules = None
+    protocol = None
     tz = None
     logs_level = None
     fetch_attempts = None
@@ -31,6 +32,7 @@ class Args(object):
         self.topic_rules = "tele/fritzbox/monitor/rule"
         self.topic_connectivity = "tele/fritzbox/monitor/connectivity"
         self.logs_level = os.environ["LOG_LEVEL"]
+        self.protocol = os.environ["PROTOCOL"]
         self.fetch_attempts = 20
         self.publish_frequency = int(os.environ["MQTT_PUBLISH_INTERVAL"])
         self.fetch_frequency = self.publish_frequency - 10 if (self.publish_frequency - 10) >= 5 else 5
@@ -48,6 +50,7 @@ class Args(object):
         if self.topic_rules == None\
             or self.topic_connectivity == None\
             or self.logs_level == None\
+            or self.protocol == None\
             or self.fetch_attempts == None\
             or self.fetch_frequency == None\
             or self.publish_frequency == None\
@@ -63,3 +66,6 @@ class Args(object):
         
         if self.publish_frequency < 30:
             raise Exception("Set publish frequency >= 30s")
+
+        if not self.protocol == "JSON" and not self.protocol == "LINE":
+            raise Exception(f"Unknown protocol: {self.protocol}")
