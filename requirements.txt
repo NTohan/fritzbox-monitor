@@ -4,3 +4,4 @@ fritzconnection==1.14.0
 future==1.0.0
 paho-mqtt<2.0.0
 schedule<=1.2.2
+influxdb-client

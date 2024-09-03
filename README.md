@@ -30,20 +30,20 @@ The list of default rules used for this documentation is as follow:
          - name: "fritzbox_monitor_error_Timeout_during_PPP_negotiation"
            unique_id: fritzbox_monitor_error_Timeout_during_PPP_negotiation
            state_topic: "tele/fritzbox/monitor/rule/Timeout_during_PPP_negotiation"
-           value_template: "{{ value_json.fields[0].value }}"
+           value_template: "{{ value_json[0].fields.value }}"
            state_class: measurement
            icon: mdi:set-top-box
          - name: "fritzbox_monitor_error_PPPoE_error:_Timeout"
            unique_id: PPPoE_error:_Timeout
            state_topic: "tele/fritzbox/monitor/rule/PPPoE_error:_Timeout"
-           value_template: "{{ value_json.fields[0].value }}"
+           value_template: "{{ value_json[0].fields.value }}"
            state_class: measurement
            icon: mdi:set-top-box
        binary_sensor:
         - name: "fritzbox_monitor_connection"
            unique_id: fritzbox_monitor_connection
            state_topic: "tele/fritzbox/monitor/connectivity"
-           value_template: "{{ value_json.fields[0].value }}"
+           value_template: "{{ value_json[0].fields.value }}"
            device_class: connectivity
     ```
 
