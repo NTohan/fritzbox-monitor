@@ -3,8 +3,45 @@ Fritzbox-Monitor is a real-time service that checks Fritzbox system errors again
 
 ![Architecture Overview](/docs/fritzbox-monitor.png)
 
-## Integration support
+## Error Rules
+
+Each rule is checked every cycle against system logs and is published as an independent MQTT topic with the count of errors per minute. Extension of the rules is done by editing `.env` file. Please refer to the section [How to configure fritzbox-manager?](#how-to-configure-fritzbox-monitor) 
+
+
+The list of default rules used for this documentation is as follow: 
+
+- PPPoE error: Timeout
+- Timeout during PPP negotiation
+
+## Integrations
 - [Home Assistant](https://www.home-assistant.io/):
+    
+    Step 1: Enable sensors in Home Assistant main configuration.yaml
+
+    ```
+    mqtt:
+       sensor:
+         - name: "fritzbox_monitor_error_Timeout_during_PPP_negotiation"
+           unique_id: fritzbox_monitor_error_Timeout_during_PPP_negotiation
+           state_topic: "tele/fritzbox/monitor/rule/Timeout_during_PPP_negotiation"
+           value_template: "{{ value_json.value }}"
+           state_class: measurement
+           icon: mdi:set-top-box
+         - name: "fritzbox_monitor_error_PPPoE_error:_Timeout"
+           unique_id: PPPoE_error:_Timeout
+           state_topic: "tele/fritzbox/monitor/rule/PPPoE_error:_Timeout"
+           value_template: "{{ value_json.value }}"
+           state_class: measurement
+           icon: mdi:set-top-box
+       binary_sensor:
+        - name: "fritzbox_monitor_connection"
+           unique_id: fritzbox_monitor_connection
+           state_topic: "tele/fritzbox/monitor/connectivity"
+           value_template: "{{ value_json.value }}"
+           device_class: connectivity
+    ```
+
+    Step 2: Enable graph
     Go to Dashboard -> Click on ADD CARD -> Search for the "Manual" card -> Paste the code below into the CODE EDITOR. The preview should look like the sample image below.
     ```
     title: FRITZ!Box Monitor
@@ -18,11 +55,6 @@ Fritzbox-Monitor is a real-time service that checks Fritzbox system errors again
     ```
     ![Integration Preview in Home Assistant](/docs/integration_home_assistant.png)
 
-## Error search rules
-
-- PPPoE error: Timeout
-- Timeout during PPP negotiation
-- ...
 
 # How to configure Fritzbox-monitor?
 
