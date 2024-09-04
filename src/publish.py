@@ -77,9 +77,9 @@ class FritzPublish(object):
                             "rule": pattern.replace(" ", "_")
                     },
                     "fields": {
-                            "value": max(events.values()) if events else 0
+                            "count": max(events.values()) if events else 0
                     },
-                    "time": max(events, key=events.get) if events else 0
+                    "time": max(events, key=events.get) if events else datetime.now().isoformat()
                     }
             )    
             msg.append((pattern, data))
@@ -94,7 +94,7 @@ class FritzPublish(object):
                         "rule": "connectivity"
                 },
                 "fields": {
-                        "value": 'ON' if self.is_connected() and self.last_msg_status  else 'OFF'
+                        "state": 'ON' if self.is_connected() and self.last_msg_status  else 'OFF'
                 },
                 "time": datetime.now().isoformat()
                 }
@@ -116,9 +116,9 @@ class FritzPublish(object):
             try:
                 self.write_api.write(bucket=self.args.influxdb_bucket, record=msg, time_precision='ms', batch_size=10000, protocol='json')
                 self.last_msg_status = True
-                self.logs.info(f"Sent `{msg}`")
+                self.logs.info(f"Sent `{msg}` to InfluxDB")
             except Exception as e:
-                self.logs.error(f"Failed to send `{msg}` with error msg {e}")
+                self.logs.error(f"Failed to send `{msg}` to InfluxDB with error msg {e}")
         else:
             self.logs.critical(f"Protocol not supported: {self.args.protocol}")
             os._exit(1)
