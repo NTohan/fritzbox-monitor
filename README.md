@@ -16,7 +16,7 @@ The list of default rules used for this documentation is as follow:
 ## Supported Protocols
 
 - JSON for MQTT
-- LINE for InfluxDB
+- LINE for InfluxDB v2
 
 
 ## Integrations
@@ -70,18 +70,30 @@ Before launching Fritzbox-Monitor, provide a .env file. All configurable paramet
 LOG_LEVEL=INFO
 TZ=Europe/Berlin
 
+# JSON (MQTT), LINE (InfluxDB)
+PROTOCOL=LINE
+
+# Fritzbox Connection
 FRITZ_IP=<your_fritzbox_ip>
 FRITZ_USERNAME=<your_fritzbox_username>
 FRITZ_PASSWORD=<your_fritzbox_password>
 # Add rules to monitor
 FRITZ_DETECTION_RULES=Timeout during PPP negotiation,PPPoE error: Timeout
 
+# MQTT Connection
 MQTT_BROKER_IP=<your_broker_ip>
 MQTT_BROKER_PORT=1883
 MQTT_USERNAME=<your_broker_username>
 MQTT_PASSWORD=<your_broker_password>
 # Publish interval in seconds >=30
 MQTT_PUBLISH_INTERVAL=30
+
+# InfluxDB v2 Connection
+INFLUXDB_IP=<your_influxdb_ip>
+INFLUXDB_PORT=<your_influxdb_port>
+INFLUXDB_ORG=<your_influxdb_organization>
+INFLUXDB_TOKEN=<your_influxdb_token>
+INFLUXDB_BUCKET=<your_influxdb_bucket>
 ```
 
 # How to launch?
