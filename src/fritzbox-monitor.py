@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     fritz_logs = monitor.fetch()
     downtimes = stats.get_downtime(fritz_logs, True)
-    logs.warn(f"Errors reported in the past are not published!") 
+    logs.warning(f"Errors reported in the past are not published!") 
     logs.info(f"Errors reported in the past: {downtimes}") 
     
     

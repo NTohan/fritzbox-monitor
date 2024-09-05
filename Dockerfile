@@ -11,4 +11,4 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 RUN pip install -r /install/requirements.txt
 
-ENTRYPOINT ["python3", "./install/fritz.py"]
+ENTRYPOINT ["python3", "./install/fritzbox-monitor.py"]
