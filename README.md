@@ -1,12 +1,11 @@
 # What is Fritzbox-monitor?
-Fritzbox-Monitor is a real-time service that checks Fritzbox system errors against a set of configured rules. The errors are published to a pre-configured MQTT broker (not included in this Docker image). For visualization, any open-source analytics and monitoring solution with MQTT support can be integrated.
+Fritzbox-Monitor is a real-time service that checks Fritzbox system errors against a set of configured rules. The errors are published to a pre-configured platform (not included in this Docker image). For visualization, any open-source analytics and monitoring solution with [supported protocols](#supported-protocols) can be integrated.
 
-![Architecture Overview](/docs/fritzbox-monitor.png)
+![Architecture Overview](/docs/fritzbox-monitor.svg)
 
 ## Error Rules
 
-Each rule is checked every cycle against system logs and is published as an independent MQTT topic with the count of errors per minute. Extension of the rules is done by editing `.env` file. Please refer to the section [How to configure fritzbox-manager?](#how-to-configure-fritzbox-monitor) 
-
+Each rule is checked every cycle against the system logs and is published as an independent entity with the count of errors per minute. Extension of the rules is done by editing `.env` file. Please refer to the section [How to configure fritzbox-manager?](#how-to-configure-fritzbox-monitor) 
 
 The list of default rules used for this documentation is as follow: 
 
@@ -19,12 +18,12 @@ The list of default rules used for this documentation is as follow:
 - LINE for InfluxDB v2
 
 
-## Integrations
+## Supported Platforms
 
 The supported integration platforms are **not** part of fritzbox-monitor docker image. 
 
 > [!NOTE]  
-> Please create a feature request if you want the supported protocol platforms to be part of the fritzbox-monitor docker image.
+> Please create a feature request if you want the supported platforms to be part of the fritzbox-monitor docker image.
 
 - [Home Assistant](https://www.home-assistant.io/):
     
@@ -54,7 +53,10 @@ The supported integration platforms are **not** part of fritzbox-monitor docker 
     ```
 
     Step 2: Enable the graph
-    Go to Dashboard -> Click on ADD CARD -> Search for the "Manual" card -> Paste the code below into the CODE EDITOR. The preview should look like the sample image below.
+
+    Go to **Dashboard** -> Click on **ADD CARD** -> Search for the **"Manual" card** -> Paste the code below into the **CODE EDITOR**. 
+    
+    The preview should look like the sample image below.
     ```
     title: FRITZ!Box Monitor
     type: history-graph
@@ -67,10 +69,17 @@ The supported integration platforms are **not** part of fritzbox-monitor docker 
     ```
     ![Integration Preview in Home Assistant](/docs/integration_home_assistant.png)
 
+- [Grafana + InfluxDB](https://www.influxdata.com/blog/getting-started-influxdb-grafana/)
+   
+   Go to **Home** -> Click on **Dashboard** -> **New** -> **Import** -> Paste the contents of the exported [JSON file](/docs/Fritzbox-Monitor-1725566680804.json) into the **Import via dashboard JSON model** section.
+
+   The preview should look like the sample image below.
+  ![Integration Preview in Home Assistant](/docs/2024-09-05%2022_00_55-Fritzbox-Monitor_Grafana.png)
+
 
 # How to Configure Fritzbox-monitor?
 
-Before launching Fritzbox-Monitor, provide a .env file. All configurable parameters mentioned in the file below without OPTIONAL tag are mandatory.
+Before launching Fritzbox-Monitor, provide a `.env` file. All configurable parameters mentioned in the file below without OPTIONAL tag are mandatory.
 
 ```
 LOG_LEVEL=INFO
@@ -130,12 +139,12 @@ The timezone in the .env file must match the Fritzbox timezone settings (FRITZ!O
 Search for your timezone code in the format, e.g., Europe/Berlin, from the [detailed list on this page](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 
 ## Limitation
-Fritzbox-monitor report errors from the starting of the application. The errors happened in the past are not handled well by the visualization tools in-use, i.e. Home Assistant and Grafana.
+Fritzbox-monitor starts publishing errors from the time the application is launched because data with old timestamps is not properly handled in time-series by the visualization tools in use, such as Home Assistant and Grafana.
 
-At start-up, fritzbox-monitor log errors happened in the past. 
+At start-up, Fritzbox-monitor logs errors that occurred before its launch.
 
 > [!IMPORTANT]  
-> The errors logged at start-up are not part of the publish to any supported protocols. 
+> Errors that occurred in the Fritzbox before the Fritzbox-monitor service was started are not published to any supported protocols.
 
 ## Credit
 Part of the Fritzbox-Monitor work is inspired by and based on this [Fritzbox-Monitor GitHub repository](https://github.com/paulknewton/fritzbox-monitor). 
