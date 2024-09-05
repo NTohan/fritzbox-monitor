@@ -31,11 +31,11 @@ class FritzStats(object):
 
     def _check_event(self, event_time, disable_check = False):
         if disable_check:
-            self.logs.info("skipping events happened in the past")
+            self.logs.debug("skipping events happened in the past")
             return True
         now = datetime.now().strftime("%d.%m.%y %H:%M:%S")
         result =  datetime.strptime(now, "%d.%m.%y %H:%M:%S") - event_time
-        # map error events happened in the last 120s to current publish cycle   
+        # map events from last 120s to the current publish cycle   
         return int(result.days) == 0 and int(result.seconds) < 120 #seconds
     
     def _filter(self, fritz_logs, disable_check = False):
