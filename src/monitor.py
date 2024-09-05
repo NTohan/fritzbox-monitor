@@ -54,7 +54,10 @@ class FritzBox(object):
 
         self.attempts = 0
         self.is_job_running = True
+        self.fritz_logs = self.fetch()
+        self.is_job_running = False
 
+    def fetch(self):
         self.logs.info("Fritzbox logs status: fetching")
         fc = fritzconnection.FritzConnection(
             address=self.args.fritz_ip,
@@ -63,11 +66,9 @@ class FritzBox(object):
             password=self.args.fritz_password,
         )
         self.fc = fc
-
-        self.fritz_logs = self.get_system_log()
         self.logs.info("Fritzbox logs status: collected")
-        self.is_job_running = False
-
+        
+        return self.get_system_log()
 
     def clear_fritzbox_logs(self):
         self.fritz_logs = None

@@ -21,15 +21,15 @@ class FritzPublish(object):
     Publishes FRITZ!Box errors to MQTT Broker.
     """
 
-    def __init__(self, args, logs, fetch):
+    def __init__(self, args, logs, monitor, stats):
         self.logs = logs
         self.args = args
-        self.fetch = fetch
+        self.monitor = monitor
         self.last_msg_status = False
 
         self.create_client()
         
-        self.stats = FritzStats(args, logs)
+        self.stats = stats
 
     def create_client(self):
         if self.args.protocol == 'JSON':
@@ -79,7 +79,7 @@ class FritzPublish(object):
                     "fields": {
                             "count": max(events.values()) if events else 0
                     },
-                    "time": max(events, key=events.get) if events else datetime.now().isoformat()
+                    #"time": max(events, key=events.get) if events else datetime.now().isoformat()
                     }
             )    
             msg.append((pattern, data))
@@ -96,7 +96,7 @@ class FritzPublish(object):
                 "fields": {
                         "state": 'ON' if self.is_connected() and self.last_msg_status  else 'OFF'
                 },
-                "time": datetime.now().isoformat()
+                #"time": datetime.now().isoformat()
                 }
         )
         return data
@@ -124,7 +124,7 @@ class FritzPublish(object):
             os._exit(1)
 
     def start(self):
-        fritz_logs = self.fetch.get_fritzbox_logs()
+        fritz_logs = self.monitor.get_fritzbox_logs()
         downtime = self.stats.get_downtime(fritz_logs)
         if downtime is None:
             self.logs.info("No error to publish")
@@ -139,4 +139,4 @@ class FritzPublish(object):
         self.send(self.args.topic_connectivity, self.prepare_msg())
 
         # fetch job should be completed before next publish cycle
-        self.fetch.clear_fritzbox_logs()
+        self.monitor.clear_fritzbox_logs()
