@@ -40,7 +40,7 @@ class Args(object):
         self.protocol = os.environ["PROTOCOL"]
         self.fetch_attempts = 20
         self.publish_frequency = int(os.environ["PUBLISH_INTERVAL"])
-        self.fetch_frequency = self.publish_frequency - 10 if (self.publish_frequency - 10) >= 5 else 5
+        self.fetch_frequency = self.publish_frequency - 5 if (self.publish_frequency - 5) >= 5 else 5
         self.fritz_ip = os.environ["FRITZ_IP"]
         self.fritz_username = os.environ["FRITZ_USERNAME"]
         self.fritz_password = os.environ["FRITZ_PASSWORD"]

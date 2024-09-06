@@ -42,9 +42,9 @@ if __name__ == '__main__':
     logs.warning(f"Errors reported in the past are not published!") 
     logs.info(f"Errors reported in the past: {downtimes}") 
     
-    
+    event = threading.Event()
     # fetching fritzbox logs job
-    schedule.every(args.fetch_frequency).seconds.do(deploy, lambda: monitor.start())
+    schedule.every(args.fetch_frequency).seconds.do(deploy, lambda: monitor.start(event))
     # publishing job
-    schedule.every(args.publish_frequency).seconds.do(deploy, lambda: publish.start())
+    schedule.every(args.publish_frequency).seconds.do(deploy, lambda: publish.start(event))
     start(schedule)

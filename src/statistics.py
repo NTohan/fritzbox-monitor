@@ -44,7 +44,11 @@ class FritzStats(object):
         fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
         fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
         fritz_logs += '\n27.08.24 15:56:12 Timeout during PPP negotiation.'
-
+    
+        if fritz_logs is None:
+            self.logs.error("fritz_logs are empty!")
+            return
+        
         timestamp_data = []
         for pattern in self.patterns:
             lines = re.split('\n', fritz_logs)

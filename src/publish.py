@@ -123,7 +123,8 @@ class FritzPublish(object):
             self.logs.critical(f"Protocol not supported: {self.args.protocol}")
             os._exit(1)
 
-    def start(self):
+    def start(self, event):
+        event.wait()
         fritz_logs = self.monitor.get_fritzbox_logs()
         downtime = self.stats.get_downtime(fritz_logs)
         if downtime is None:
@@ -140,3 +141,4 @@ class FritzPublish(object):
 
         # fetch job should be completed before next publish cycle
         self.monitor.clear_fritzbox_logs()
+        event.clear()

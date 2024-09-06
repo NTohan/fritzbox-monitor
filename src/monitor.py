@@ -21,9 +21,8 @@ class FritzBox(object):
     fc = None
     agrs = None
     logs = None
-    fritz_logs = None
     attempts = 0
-    is_job_running = False
+    fritz_logs = None
 
     def __init__(self, args, logs):
         super(FritzBox, self).__init__()
@@ -48,30 +47,25 @@ class FritzBox(object):
         logs = resp["NewDeviceLog"]
         self.logs.debug(f"Fritzbox logs: {logs}")
         self.logs.info("Fritzbox logs status: collected")
-        return logs
+        return logs if bool(logs and logs.strip()) else None
 
     
     # schedule before the publish call
-    def start(self):
+    def start(self, event):
         if self.attempts >= self.args.fetch_attempts:
             # Try reconnecting to Fritzbox
             self.logs.critical(f"Fritzbox logs status after {self.attempts} attempts: failed! fritzbox-monitor will be restarted.")
             os._exit(1)
 
-        if self.is_job_running:
-            self.attempts += 1
-            self.logs.info("Fritzbox logs status: pending")    
-            return
-
-        self.attempts = 0
-        self.is_job_running = True
         self.fritz_logs = self.get_system_log()
-        self.is_job_running = False
+        event.set()
 
     def clear_fritzbox_logs(self):
         self.fritz_logs = None
 
     def get_fritzbox_logs(self):
         if self.fritz_logs is None:
+            self.attempts += 1
             raise Exception("Fritzbox logs status: not available")
+        self.attempts = 0
         return self.fritz_logs
