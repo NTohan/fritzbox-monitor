@@ -37,7 +37,7 @@ if __name__ == '__main__':
     monitor = FritzBox(args, logs)
     publish = FritzPublish(args, logs, monitor, stats)
 
-    fritz_logs = monitor.fetch()
+    fritz_logs = monitor.get_system_log()
     downtimes = stats.get_downtime(fritz_logs, True)
     logs.warning(f"Errors reported in the past are not published!") 
     logs.info(f"Errors reported in the past: {downtimes}") 

@@ -30,14 +30,25 @@ class FritzBox(object):
 
         self.args = args
         self.logs = logs
-
+        self.fc = fritzconnection.FritzConnection(
+            address=self.args.fritz_ip,
+            port=None,
+            user=self.args.fritz_username,
+            password=self.args.fritz_password,
+        )
+        self.logs.info(f"Connected to {self.fc}")
+        
     def get_system_log(self):
         """
         Get the current system log in text format showing device internet events
         :return: system log as a text string
         """
+        self.logs.info("Fritzbox logs status: fetching")
         resp = self.fc.call_action('DeviceInfo', 'GetDeviceLog')
-        return resp["NewDeviceLog"]
+        logs = resp["NewDeviceLog"]
+        self.logs.debug(f"Fritzbox logs: {logs}")
+        self.logs.info("Fritzbox logs status: collected")
+        return logs
 
     
     # schedule before the publish call
@@ -54,21 +65,8 @@ class FritzBox(object):
 
         self.attempts = 0
         self.is_job_running = True
-        self.fritz_logs = self.fetch()
+        self.fritz_logs = self.get_system_log()
         self.is_job_running = False
-
-    def fetch(self):
-        self.logs.info("Fritzbox logs status: fetching")
-        fc = fritzconnection.FritzConnection(
-            address=self.args.fritz_ip,
-            port=None,
-            user=self.args.fritz_username,
-            password=self.args.fritz_password,
-        )
-        self.fc = fc
-        self.logs.info("Fritzbox logs status: collected")
-        
-        return self.get_system_log()
 
     def clear_fritzbox_logs(self):
         self.fritz_logs = None
