@@ -7,6 +7,8 @@ services:
     container_name: fritzbox-monitor
     environment:
       LOG_LEVEL: ${LOG_LEVEL}
+      PROTOCOL: ${PROTOCOL}
+      PUBLISH_INTERVAL: ${PUBLISH_INTERVAL} # in seconds
       FRITZ_IP: ${FRITZ_IP}      
       FRITZ_USERNAME: ${FRITZ_USERNAME}
       FRITZ_PASSWORD: ${FRITZ_PASSWORD}
@@ -15,7 +17,11 @@ services:
       MQTT_BROKER_PORT: ${MQTT_BROKER_PORT}
       MQTT_USERNAME: ${MQTT_USERNAME}
       MQTT_PASSWORD: ${MQTT_PASSWORD}
-      MQTT_PUBLISH_INTERVAL: ${MQTT_PUBLISH_INTERVAL} # in seconds
+      INFLUXDB_IP: ${INFLUXDB_IP}
+      INFLUXDB_PORT: ${INFLUXDB_PORT}
+      INFLUXDB_ORG: ${INFLUXDB_ORG}
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
     #cap_add:
     #  - NET_ADMIN
     restart: unless-stopped

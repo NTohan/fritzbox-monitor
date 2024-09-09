@@ -22,27 +22,33 @@ class FritzStats(object):
         self.patterns = args.fritz_detection_rules.split(',')
 
 
-    def get_downtime(self, fritz_logs):
+    def get_downtime(self, fritz_logs, disable_check = False):
         """
         Get the times when the error events occurred
         :return: list of patter and events
         """
-        return self._filter(fritz_logs)
+        return self._filter(fritz_logs, disable_check)
 
-    def check_event(self, event_time):
+    def _check_event(self, event_time, disable_check = False):
+        if disable_check:
+            self.logs.debug("skipping events happened in the past")
+            return True
         now = datetime.now().strftime("%d.%m.%y %H:%M:%S")
         result =  datetime.strptime(now, "%d.%m.%y %H:%M:%S") - event_time
-        # map error events happened in the last 120s to current publish cycle   
+        # map events from last 120s to the current publish cycle   
         return int(result.days) == 0 and int(result.seconds) < 120 #seconds
     
-    def _filter(self, fritz_logs):
+    def _filter(self, fritz_logs, disable_check = False):
         # TODO: remove, added only for testing purposes
         fritz_logs += '\n16.08.24 15:44:10 PPPoE error: Timeout.'
         fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
         fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
-        fritz_logs += '\n16.08.24 15:52:12 PPPoE error: Timeout.'
         fritz_logs += '\n27.08.24 15:56:12 Timeout during PPP negotiation.'
-
+    
+        if fritz_logs is None:
+            self.logs.error("fritz_logs are empty!")
+            return
+        
         timestamp_data = []
         for pattern in self.patterns:
             lines = re.split('\n', fritz_logs)
@@ -53,13 +59,13 @@ class FritzStats(object):
                     try:
                         ts_str = regex.search(line).group(1)  # timestamp when the event occurred
                         timestamp = datetime.strptime(ts_str, "%d.%m.%y %H:%M:%S")  # format "30.07.19 23:59:12" 
-                        if self.check_event(timestamp):
+                        if self._check_event(timestamp, disable_check):
                             timestamp_data.append((timestamp.isoformat(), pattern))
                         else:
                             self.logs.debug(f"skipping error published in the past {timestamp.isoformat(), pattern}")
                     except AttributeError:
                         pass
 
-        self.logs.info(timestamp_data)
+        self.logs.debug(timestamp_data)
         return timestamp_data
      # type: ignore
