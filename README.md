@@ -116,7 +116,7 @@ INFLUXDB_BUCKET=<your_influxdb_bucket>
 
 ```
 mkdir logs
-docker run --env-file .env navitohan/fritzbox-monitor:latest
+docker run -d --restart unless-stopped --env-file .env navitohan/fritzbox-monitor:latest
 ```
 
 # How to build locally?
