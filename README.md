@@ -1,3 +1,6 @@
+![Publish Docker image](https://github.com/NTohan/fritzbox-monitor/actions/workflows/main.yml/badge.svg)
+![Build](https://github.com/NTohan/fritzbox-monitor/actions/workflows/test.yml/badge.svg)
+
 # What is Fritzbox-monitor?
 Fritzbox-Monitor is a real-time service that checks Fritzbox system errors against a set of configured rules. The errors are published to a pre-configured platform (not included in this Docker image). For visualization, any open-source analytics and monitoring solution with [supported protocols](#supported-protocols) can be integrated.
 
