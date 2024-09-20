@@ -1,4 +1,7 @@
 .env
+build
 config
+dist
+*-info
 *logs
 *__pycache__
