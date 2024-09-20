@@ -11,7 +11,7 @@ with open("LICENSE", "r") as fh:
 
 setup(
    name='fritzbox-monitor',
-   version='1.0.0',
+   version='2.0.0',
    description='Fritzbox-Monitor is a real-time service that checks Fritzbox system errors against a set of configured rules.',
    author='Navneet Tohan',
    author_email='navneet.tohan@gmail.com',
@@ -20,6 +20,5 @@ setup(
    long_description=long_description,      # Long description read from the the readme file
    long_description_content_type="text/markdown",
    license = license,
-   packages=find_packages(include=['fritzbox-monitor', 'exampleproject.*']),
    scripts=['bin/fritzbox-monitor'],
 )
